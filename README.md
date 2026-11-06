@@ -17,7 +17,7 @@ So for example:
 ```
 distrobox enter davincibox
 ```
-4. Then clone this repo
+4. Then clone this repo while you're inside the container
 ```
    git clone https://github.com/gameodysseypl/PS5-Resolve
 ```
