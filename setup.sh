@@ -3,7 +3,8 @@
 # Tested on Fedora 44 Distrobox, Mesa 26.2.6, LLVM 22.1.8, PS5 Oberon/GFX1013.
 set -Eeuo pipefail
 
-readonly SCRIPT_VERSION="1.0.0"
+readonly SCRIPT_VERSION="1.1.0"
+readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly CLC_VERSION="22.1.8.3"
 readonly CLC_ARCHIVE="mesa-libclc-${CLC_VERSION}.tar.bz2"
 readonly CLC_URL="https://gitlab.freedesktop.org/karolherbst/mesa-libclc/-/archive/${CLC_VERSION}/${CLC_ARCHIVE}"
@@ -32,7 +33,7 @@ Usage: ./setup.sh [--no-launcher] [--help]
 Run this script as your normal user from inside the Fedora Distrobox named
 "${CONTAINER_NAME}". It installs Rusticl and build tools, builds the pinned
 patched mesa-libclc ${CLC_VERSION}, backs up and replaces the two SPIR-V files,
-checks OpenCL, and creates a host-side KDE launcher when run-davinci is present.
+checks OpenCL, and creates a host-side XDG application launcher when run-davinci is present.
 
 Environment overrides:
   CONTAINER_NAME  Distrobox name (default: davincibox)
@@ -191,8 +192,18 @@ grep -iE 'Platform Name|Device Name|Device OpenCL C Version|Image support' "$CLI
 # Create host-side launcher files in the shared home directory.
 if [[ "$CREATE_LAUNCHER" -eq 1 ]]; then
     if command -v run-davinci >/dev/null 2>&1 && [[ -x /opt/resolve/bin/resolve ]]; then
-        log 'Creating the host-side launcher and KDE application entry'
-        mkdir -p "$HOME/.local/bin" "$HOME/.local/share/applications"
+        log 'Creating the host-side XDG launcher and installing the DaVinci Resolve icon'
+        mkdir -p "$HOME/.local/bin" "$HOME/.local/share/applications" "$HOME/.local/share/icons"
+
+        ICON_SOURCE="$SCRIPT_DIR/assets/davinci-resolve.png"
+        ICON_PATH="applications-multimedia"
+        if [[ -s "$ICON_SOURCE" ]]; then
+            ICON_PATH="$HOME/.local/share/icons/davinci-resolve.png"
+            install -D -m 0644 "$ICON_SOURCE" "$ICON_PATH"
+            log "DaVinci Resolve icon installed to: $ICON_PATH"
+        else
+            warn "Icon asset not found at $ICON_SOURCE; using the generic multimedia icon."
+        fi
 
         cat > "$HOME/.local/bin/resolve-rusticl" <<HOST_LAUNCHER
 #!/usr/bin/env bash
@@ -213,7 +224,7 @@ Type=Application
 Name=DaVinci Resolve (Rusticl)
 Comment=DaVinci Resolve running through Distrobox with Mesa Rusticl OpenCL
 Exec=$HOME/.local/bin/resolve-rusticl %U
-Icon=applications-multimedia
+Icon=$ICON_PATH
 Terminal=false
 Categories=AudioVideo;Video;
 StartupNotify=true
@@ -230,7 +241,7 @@ DESKTOP_ENTRY
             fi
         fi
         log 'Application entry created: DaVinci Resolve (Rusticl)'
-        warn 'If KDE asks, right-click the desktop file and choose Allow Launching.'
+        warn 'If your desktop environment asks, mark the desktop entry as trusted or allow launching.'
     else
         warn 'run-davinci or /opt/resolve/bin/resolve was not found; skipping launcher creation.'
         warn 'Install DaVinci Resolve in this container, then rerun this script to create the launcher.'
@@ -243,6 +254,6 @@ printf 'Container: %s\n' "$CONTAINER_NAME"
 printf 'Isolated Rusticl ICD directory: %s\n' "$ICD_DIR"
 printf 'Patched libclc source/build: %s\n' "$SRC_DIR"
 printf 'Original files backup: %s\n' "$BACKUP_DIR"
-printf '\nLaunch Resolve from KDE as: DaVinci Resolve (Rusticl)\n'
+printf '\nLaunch Resolve from your application menu as: DaVinci Resolve (Rusticl)\n'
 printf 'Or from the Bazzite host: %s/.local/bin/resolve-rusticl\n' "$HOME"
 printf '\nNOTE: after Mesa/libclc package updates, rerun this script to reapply the patched SPIR-V files.\n'
