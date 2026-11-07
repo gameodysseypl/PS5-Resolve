@@ -1,7 +1,7 @@
 # How to use
 
 This is how this script was intended to be used:
-1. Install Davinci Resolve on the PS5 running Bazzite or other Linux operating system via Distrobox. For example on Bazzite:
+1. Install Davinci Resolve on the PS5 running Bazzite or other Linux operating system via Distrobox/[Davincibox](https://github.com/zelikos/davincibox). For example on Bazzite:
 ```
   ujust install-resolve 
 ```
