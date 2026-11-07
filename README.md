@@ -30,7 +30,8 @@ distrobox enter davincibox
    bash ./setup.sh
 ```
 
-After the setup is finished You Should see the second Davinci Resolve icon with the "Davinci Resolve (Rusticl) name. This one should work just fine and not crash the whole system, like a standard installation does.
+After the setup is finished You Should see the second Davinci Resolve icon with the "Davinci Resolve (Rusticl) name on Your desktop. This one should work just fine and not crash the whole system, like a standard installation does.
+
 # Running DaVinci Resolve on PlayStation 5 with Bazzite: The Problem and the Fix
 
 ## 1. The original problem
